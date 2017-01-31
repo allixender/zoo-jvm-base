@@ -3,7 +3,7 @@
 export RUNTIME_PACKAGES="wget libxml2 libxslt1.1 curl zip openssl libgd-dev libfcgi0ldbl  	\
 libgdal1h libgeos-3.4.2 libgeos-c1 libcgal10 apache2 gdal-bin \
 libmozjs185-1.0 libproj0 libgeotiff2 libcairo2 librsvg2-2 libjpeg62-turbo libtiff5 libpng3 libxslt1.1 \
-python2.7 python-tk libwxbase3.0-0 libwxgtk3.0-0 wx-common apache2"
+python2.7 python-tk libwxbase3.0-0 libwxgtk3.0-0 wx-common apache2 openjdk-7-jdk"
 
 apt-get update -y \
       && apt-get install -y --no-install-recommends $RUNTIME_PACKAGES
@@ -28,6 +28,9 @@ export CGI_DATA_DIR=$CGI_DIR/data
 export CGI_TMP_DIR=$CGI_DATA_DIR/tmp
 export CGI_CACHE_DIR=$CGI_DATA_DIR/cache
 export WWW_DIR=/var/www/html
+
+# JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
 mkdir -p $BUILD_ROOT \
   && mkdir -p $CGI_DIR \
@@ -81,18 +84,21 @@ svn checkout http://svn.zoo-project.org/svn/trunk/zoo-project/ $ZOO_BUILD_DIR \
   --with-gdal-config=/usr/bin/gdal-config \
   --with-geosconfig=/usr/bin/geos-config \
   --with-python \
-  --with-mapserver=$BUILD_ROOT/mapserver-7.0.4/build \
+  --with-mapserver=/usr/include/mapserver \
   --with-xml2config=/usr/bin/xml2-config \
   --with-pyvers=2.7 \
   --with-js=/usr \
-  && make && make install || exit 1
+   --with-java=$JAVA_HOME \
+  && make && make install \
+  && cp /usr/com/zoo-project/symbols.sym $CGI_DATA_DIR || exit 1
 
-  cd $ZOO_BUILD_DIR/zoo-api/java/ \
-    && make || exit 1
+cd $ZOO_BUILD_DIR/zoo-api/java/ \
+  && make && cp libZOO.so $CGI_DIR || exit 1
 
 apt-get remove --purge -y $BUILD_PACKAGES \
   && rm -rf /var/lib/apt/lists/*
 
 # delay until final zoo-project build
 rm $BUILD_ROOT/mapserver-7.0.4.tar.gz
+rm $BUILD_ROOT/mapserver-7.0.4
 rm -rf $ZOO_BUILD_DIR

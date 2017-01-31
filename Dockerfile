@@ -10,6 +10,8 @@ ENV CGI_TMP_DIR /usr/lib/cgi-bin/data/tmp
 ENV CGI_CACHE_DIR /usr/lib/cgi-bin/data/cache
 ENV WWW_DIR /var/www/html
 
+ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64
+
 ADD build-script.sh /opt
 RUN chmod +x /opt/build-script.sh \
   && sync \
